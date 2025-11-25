@@ -1,39 +1,65 @@
 using UnityEngine;
+using System.Collections;
 
 public class MoveToMouseClick : MonoBehaviour
 {
     // Public variables configurable in the Inspector
-    public float speed = 4.0f; // Increased for more reasonable movement
-    public float stopDistance = 0.1f; // How close we need to be to the target to stop
-    public float rotationSpeed = 8.0f; // Separate rotation speed
+    public float speed = 4.0f;
+    public float stopDistance = 0.1f;
+    public float rotationSpeed = 8.0f;
+    
+    // Health system variables
+    public int maxHealth = 10;
+    public int currentHealth;
+    public bool isDead = false;
+    public float healthDropInterval = 1.0f;
     
     // Private variables for tracking state and components
     private Vector3 targetPosition;
     private Vector3 shootDirection;
     private Animator animator;
     private bool isShooting = false;
+    private Coroutine healthDropCoroutine;
 
-    // Animation parameter names
+    // Animation parameter names - using triggers for more reliable state changes
     private const string MOVEMENT_PARAM_NAME = "isRunning";
     private const string FIRING_PARAM_NAME = "isFiring";
+    private const string DEAD_PARAM_NAME = "isDead";
 
     void Start()
     {
         animator = GetComponent<Animator>();
         targetPosition = transform.position;
         shootDirection = transform.forward;
+        
+        // Initialize health
+        currentHealth = maxHealth;
+        isDead = false;
 
         if (animator != null)
         {
             animator.SetBool(MOVEMENT_PARAM_NAME, false); 
             animator.SetBool(FIRING_PARAM_NAME, false);
+            animator.SetBool(DEAD_PARAM_NAME, false);
         }
+        
+        // Start the health drop coroutine
+        healthDropCoroutine = StartCoroutine(HealthDropRoutine());
+        
+        Debug.Log($"Soldier spawned with {currentHealth} health");
     }
 
     void Update()
     {
+        // If dead, ensure death state is maintained and exit early
+        if (isDead)
+        {
+            MaintainDeathState();
+            return;
+        }
+
         // 1. Check for RIGHT Mouse Click Input for movement
-        if (Input.GetMouseButtonDown(1)) // Right mouse button
+        if (Input.GetMouseButtonDown(1))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
@@ -41,27 +67,33 @@ public class MoveToMouseClick : MonoBehaviour
             if (Physics.Raycast(ray, out hit))
             {
                 targetPosition = hit.point;
-                isShooting = false; // Stop shooting when moving
+                isShooting = false;
+                if (animator != null)
+                {
+                    animator.SetBool(FIRING_PARAM_NAME, false);
+                }
             }
         }
 
         // 2. Check for LEFT Mouse Click Input for firing
-        if (Input.GetMouseButtonDown(0)) // Left mouse button
+        if (Input.GetMouseButtonDown(0))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 
+            // if (currentHealth <= 0)
+            // {
+            //     Die();
+            // }
+
             if (Physics.Raycast(ray, out hit))
             {
-                // Set the shoot direction and position
                 Vector3 shootTarget = hit.point;
-                shootTarget.y = transform.position.y; // Keep at same height for flat rotation
+                shootTarget.y = transform.position.y;
                 shootDirection = (shootTarget - transform.position).normalized;
                 
-                // Trigger shooting
                 isShooting = true;
                 
-                // Stop movement and start firing animation
                 if (animator != null)
                 {
                     animator.SetBool(MOVEMENT_PARAM_NAME, false);
@@ -71,33 +103,165 @@ public class MoveToMouseClick : MonoBehaviour
         }
 
         // Stop firing when left mouse button is released
-        if (Input.GetMouseButtonUp(0)) // Left mouse button released
+        if (Input.GetMouseButtonUp(0))
         {
             isShooting = false;
-            if (animator != null)
+            if (animator != null && !isDead)
             {
                 animator.SetBool(FIRING_PARAM_NAME, false);
             }
         }
 
-        // Handle rotation based on current action
-        if (isShooting)
+        // Handle actions if alive
+        if (!isDead)
         {
-            targetPosition = transform.position;
-            // Rotate to face shooting direction
-            RotateTowardsDirection(shootDirection);
-        }
-        else
-        {
-            // Handle movement and rotation for normal movement
-            HandleMovement();
+            if (isShooting)
+            {
+                targetPosition = transform.position;
+                RotateTowardsDirection(shootDirection);
+            }
+            else
+            {
+                HandleMovement();
+            }
         }
     }
 
-    // Separate function to handle rotation towards a specific direction
+    // Ensures death state is maintained and overrides other animations
+    private void MaintainDeathState()
+    {
+        // Force stop all movement and actions
+        targetPosition = transform.position;
+        isShooting = false;
+        
+        // Use both bool and trigger to ensure death animation plays
+        if (animator != null)
+        {
+            // Immediately stop all other animations
+            animator.SetBool(MOVEMENT_PARAM_NAME, false);
+            animator.SetBool(FIRING_PARAM_NAME, false);
+            
+            // Set death state
+            animator.SetBool(DEAD_PARAM_NAME, true);
+        }
+    }
+
+    // Coroutine to drop health every second
+    private IEnumerator HealthDropRoutine()
+    {
+        while (!isDead)
+        {
+            yield return new WaitForSeconds(healthDropInterval);
+            
+            if (!isDead)
+            {
+                TakeDamage(1);
+            }
+        }
+    }
+
+    // Public method to take damage
+    public void TakeDamage(int damageAmount)
+    {
+        if (isDead) return;
+        
+        currentHealth -= damageAmount;
+        currentHealth = Mathf.Max(0, currentHealth);
+        
+        Debug.Log($"Soldier took {damageAmount} damage. Health: {currentHealth}/{maxHealth}");
+        
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+    }
+
+    // Method to handle death - more forceful approach
+    private void Die()
+    {
+        if (isDead) return; // Prevent multiple death calls
+        
+        isDead = true;
+        isShooting = false;
+        
+        // Stop all coroutines immediately
+        if (healthDropCoroutine != null)
+        {
+            StopCoroutine(healthDropCoroutine);
+        }
+        
+        // Force immediate state change
+        MaintainDeathState();
+        
+        // Optional: Disable collider or other components
+        // GetComponent<Collider>().enabled = false;
+        
+        Debug.Log("Soldier has died!");
+
+        if (animator != null)
+        {
+            animator.SetBool(MOVEMENT_PARAM_NAME, false);
+            animator.SetBool(FIRING_PARAM_NAME, false);
+            animator.SetBool(DEAD_PARAM_NAME, false);
+        }
+        
+        // Optional: Start coroutine to disable script after death animation
+        StartCoroutine(DisableAfterDeath());
+    }
+
+    // Coroutine to completely disable the script after death animation has time to play
+    private IEnumerator DisableAfterDeath()
+    {
+        // Wait for death animation to start playing
+        yield return new WaitForSeconds(0.5f);
+        
+        // Completely disable this script to prevent any further updates
+        this.enabled = false;
+    }
+
+    // Public method to respawn the soldier
+    public void Respawn()
+    {
+        currentHealth = maxHealth;
+        isDead = false;
+        
+        // Reset state
+        targetPosition = transform.position;
+        isShooting = false;
+        
+        // Reset animations - use both reset and set methods
+        if (animator != null)
+        {
+            animator.SetBool(MOVEMENT_PARAM_NAME, false);
+            animator.SetBool(FIRING_PARAM_NAME, false);
+            animator.SetBool(DEAD_PARAM_NAME, false);
+        }
+        
+        // Restart health drop coroutine
+        healthDropCoroutine = StartCoroutine(HealthDropRoutine());
+        
+        // Optional: Re-enable collider
+        // GetComponent<Collider>().enabled = true;
+        
+        Debug.Log($"Soldier respawned with {currentHealth} health");
+    }
+
+    // Public method to get health percentage
+    public float GetHealthPercentage()
+    {
+        return (float)currentHealth / maxHealth;
+    }
+
+    // Public method to check if soldier is alive
+    public bool IsAlive()
+    {
+        return !isDead;
+    }
+
+    // Separate function to handle rotation
     private void RotateTowardsDirection(Vector3 direction)
     {
-        if (direction != Vector3.zero)
+        if (direction != Vector3.zero && !isDead)
         {
             Quaternion targetRotation = Quaternion.LookRotation(direction);
             transform.rotation = Quaternion.Slerp(
@@ -111,26 +275,23 @@ public class MoveToMouseClick : MonoBehaviour
     // Separate function to handle movement logic
     private void HandleMovement()
     {
-        // Calculate the remaining distance to the target
+        if (isDead) return;
+
         float distanceToTarget = Vector3.Distance(transform.position, targetPosition);
 
         if (distanceToTarget > stopDistance)
         {
-            // Move the soldier at constant speed using MoveTowards
             transform.position = Vector3.MoveTowards(
                 transform.position,     
                 targetPosition,         
                 Time.deltaTime * speed  
             );
             
-            // Look in the direction of travel
             Vector3 direction = (targetPosition - transform.position).normalized;
-            direction.y = 0; // Keep rotation flat on the ground
+            direction.y = 0;
             
-            // Use the rotation function
             RotateTowardsDirection(direction);
             
-            // Animation Logic: Start Walking
             if (animator != null)
             {
                 animator.SetBool(MOVEMENT_PARAM_NAME, true);
@@ -138,7 +299,6 @@ public class MoveToMouseClick : MonoBehaviour
         }
         else
         {
-            // Animation Logic: Stop Walking and Idle
             if (animator != null)
             {
                 animator.SetBool(MOVEMENT_PARAM_NAME, false);

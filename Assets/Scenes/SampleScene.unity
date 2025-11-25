@@ -564,6 +564,10 @@ MonoBehaviour:
   speed: 4
   stopDistance: 0.1
   rotationSpeed: 8
+  maxHealth: 3
+  currentHealth: 0
+  isDead: 0
+  healthDropInterval: 1
 --- !u!54 &1651289015
 Rigidbody:
   m_ObjectHideFlags: 0
