@@ -21,6 +21,7 @@ public class MoveToMouseClick : MonoBehaviour
     private bool isShooting = false;
     private Coroutine healthDropCoroutine;
 
+    [SerializeField] private GunScript gun;
     [SerializeField] private AudioClip[] deathSoundClips;
     [SerializeField] private AudioClip[] movementStartCommandSoundClips;
     [SerializeField] private AudioClip[] movementEndCommandSoundClips;
@@ -37,6 +38,12 @@ public class MoveToMouseClick : MonoBehaviour
 
     void Start()
     {
+        gun = GetComponentInChildren<GunScript>();
+        if (gun == null)
+        {
+            Debug.LogError("GunScript not found on soldier!");
+        }
+
         animator = GetComponent<Animator>();
         targetPosition = transform.position;
         shootDirection = transform.forward;
@@ -104,28 +111,32 @@ public class MoveToMouseClick : MonoBehaviour
 
             if (Physics.Raycast(ray, out hit))
             {
-                Vector3 shootTarget = hit.point;
-                shootTarget.y = transform.position.y;
-                shootDirection = (shootTarget - transform.position).normalized;
+                StartShooting(hit.point);
+                // Vector3 shootTarget = hit.point;
+                // shootTarget.y = transform.position.y;
+                // shootDirection = (shootTarget - transform.position).normalized;
                 
-                isShooting = true;
+                // isShooting = true;
                 
-                if (animator != null)
-                {
-                    animator.SetBool(MOVEMENT_PARAM_NAME, false);
-                    animator.SetBool(FIRING_PARAM_NAME, true);
-                }
+                // if (animator != null)
+                // {
+                //     animator.SetBool(MOVEMENT_PARAM_NAME, false);
+                //     animator.SetBool(FIRING_PARAM_NAME, true);
+                // }
+
+                // gun.Shoot(hit.point);
             }
         }
 
         // Stop firing when left mouse button is released
         if (Input.GetMouseButtonUp(0))
         {
-            isShooting = false;
-            if (animator != null && !isDead)
-            {
-                animator.SetBool(FIRING_PARAM_NAME, false);
-            }
+            StopShooting();
+            // isShooting = false;
+            // if (animator != null && !isDead)
+            // {
+            //     animator.SetBool(FIRING_PARAM_NAME, false);
+            // }
         }
 
         // Handle actions if alive
@@ -330,6 +341,49 @@ public class MoveToMouseClick : MonoBehaviour
                 animator.SetBool(MOVEMENT_PARAM_NAME, false);
                 hasPlayedMovementStartSound = false;
             }
+        }
+    }
+
+    private void StartShooting(Vector3 targetPoint)
+    {
+        if (isDead) return;
+        
+        Vector3 shootTarget = targetPoint;
+        shootTarget.y = transform.position.y;
+        shootDirection = (shootTarget - transform.position).normalized;
+        
+        isShooting = true;
+        
+        // Play shooting animation
+        if (animator != null)
+        {
+            animator.SetBool(MOVEMENT_PARAM_NAME, false);
+            animator.SetBool(FIRING_PARAM_NAME, true);
+        }
+        
+        // Actually shoot the gun
+        StartCoroutine(DelayedShoot(shootDirection));
+    }
+
+    private IEnumerator DelayedShoot(Vector3 direction)
+    {
+        // Wait for the aiming/animation to start
+        yield return new WaitForSeconds(0.3f); // Adjust this delay as needed
+        
+        // Actually shoot the gun after delay
+        if (gun != null && !isDead)
+        {
+            gun.Shoot(-direction);
+        }
+    }
+
+    // New method to stop shooting
+    private void StopShooting()
+    {
+        isShooting = false;
+        if (animator != null && !isDead)
+        {
+            animator.SetBool(FIRING_PARAM_NAME, false);
         }
     }
 }

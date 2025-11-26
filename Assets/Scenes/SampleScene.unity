@@ -425,11 +425,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
---- !u!1 &857923159 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1829597508155286, guid: 7359baf27e84aa44cafac3788c8be0f1, type: 3}
-  m_PrefabInstance: {fileID: 1917693562}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -613,6 +608,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 643559c8a1216aebb90eb39805e024f8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1651289019}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 643559c8a1216aebb90eb39805e024f8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1651289021}
   m_SourcePrefab: {fileID: 100100000, guid: 643559c8a1216aebb90eb39805e024f8, type: 3}
 --- !u!1 &1651289007 stripped
 GameObject:
@@ -660,6 +658,7 @@ MonoBehaviour:
   currentHealth: 0
   isDead: 0
   healthDropInterval: 1
+  gun: {fileID: 1651289021}
   deathSoundClips:
   - {fileID: 8300000, guid: 9ffaf4e972a680594bdb1da69f7cee95, type: 3}
   - {fileID: 8300000, guid: a5b9d3ab86782bc679daf6b8c026194a, type: 3}
@@ -821,6 +820,22 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1651289021
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1651289007}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bee3a0b11345ac383b906faf499e5852, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GunScript
+  bulletSpawnPoint: {fileID: 417863243}
+  bulletPrefab: {fileID: 2774289473896529904, guid: c405489d8ad841689ad6d70fe1ca45c5, type: 3}
+  bulletSpeed: 20
+  bulletSoundClip: {fileID: 8300000, guid: 74e94f0b4944c01c6873ff74559259ae, type: 3}
 --- !u!1001 &1896008605
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -957,32 +972,13 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4053999043310118, guid: 7359baf27e84aa44cafac3788c8be0f1, type: 3}
       insertIndex: -1
       addedObject: {fileID: 417863243}
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1829597508155286, guid: 7359baf27e84aa44cafac3788c8be0f1, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1917693566}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7359baf27e84aa44cafac3788c8be0f1, type: 3}
 --- !u!4 &1917693563 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4053999043310118, guid: 7359baf27e84aa44cafac3788c8be0f1, type: 3}
   m_PrefabInstance: {fileID: 1917693562}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1917693566
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 857923159}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bee3a0b11345ac383b906faf499e5852, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  bulletSpawnPoint: {fileID: 417863243}
-  bulletPrefab: {fileID: 2774289473896529904, guid: c405489d8ad841689ad6d70fe1ca45c5, type: 3}
-  bulletSpeed: 20
-  bulletSoundClip: {fileID: 8300000, guid: 74e94f0b4944c01c6873ff74559259ae, type: 3}
 --- !u!1 &1964182909
 GameObject:
   m_ObjectHideFlags: 0
