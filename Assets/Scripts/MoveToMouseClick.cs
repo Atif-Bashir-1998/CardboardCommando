@@ -21,6 +21,8 @@ public class MoveToMouseClick : MonoBehaviour
     private bool isShooting = false;
     private Coroutine healthDropCoroutine;
 
+    [SerializeField] private HealthbarScript healthbar;
+
     [SerializeField] private GunScript gun;
     [SerializeField] private AudioClip[] deathSoundClips;
     [SerializeField] private AudioClip[] movementStartCommandSoundClips;
@@ -43,6 +45,8 @@ public class MoveToMouseClick : MonoBehaviour
         {
             Debug.LogError("GunScript not found on soldier!");
         }
+
+        healthbar.UpdateHealthBar(maxHealth, currentHealth);
 
         animator = GetComponent<Animator>();
         targetPosition = transform.position;
@@ -196,6 +200,8 @@ public class MoveToMouseClick : MonoBehaviour
         currentHealth = Mathf.Max(0, currentHealth);
         
         Debug.Log($"Soldier took {damageAmount} damage. Health: {currentHealth}/{maxHealth}");
+        
+        healthbar.UpdateHealthBar(maxHealth, currentHealth);
         
         if (currentHealth <= 0)
         {
