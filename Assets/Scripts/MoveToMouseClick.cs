@@ -21,6 +21,15 @@ public class MoveToMouseClick : MonoBehaviour
     private bool isShooting = false;
     private Coroutine healthDropCoroutine;
 
+    [SerializeField] private AudioClip[] deathSoundClips;
+    [SerializeField] private AudioClip[] movementStartCommandSoundClips;
+    [SerializeField] private AudioClip[] movementEndCommandSoundClips;
+
+    private bool hasPlayedMovementStartSound = false;
+    private bool hasPlayedMovementEndSound = false;
+    private bool hasPlayedDeathSound = false;
+
+
     // Animation parameter names - using triggers for more reliable state changes
     private const string MOVEMENT_PARAM_NAME = "isRunning";
     private const string FIRING_PARAM_NAME = "isFiring";
@@ -71,6 +80,13 @@ public class MoveToMouseClick : MonoBehaviour
                 if (animator != null)
                 {
                     animator.SetBool(FIRING_PARAM_NAME, false);
+
+                    if (!hasPlayedMovementStartSound)
+                    {
+                        SoundFXManager.instance.PlayRandomSoundFXClip(movementStartCommandSoundClips, transform);
+                        hasPlayedMovementStartSound = true;
+                        hasPlayedMovementEndSound = false;
+                    }
                 }
             }
         }
@@ -200,6 +216,11 @@ public class MoveToMouseClick : MonoBehaviour
 
         if (animator != null)
         {
+            if(!hasPlayedDeathSound)
+            {
+                SoundFXManager.instance.PlayRandomSoundFXClip(deathSoundClips, transform);
+                hasPlayedDeathSound = true;
+            }
             animator.SetBool(MOVEMENT_PARAM_NAME, false);
             animator.SetBool(FIRING_PARAM_NAME, false);
             animator.SetBool(DEAD_PARAM_NAME, false);
@@ -301,7 +322,13 @@ public class MoveToMouseClick : MonoBehaviour
         {
             if (animator != null)
             {
+                if (!hasPlayedMovementEndSound)
+                {
+                    SoundFXManager.instance.PlayRandomSoundFXClip(movementEndCommandSoundClips, transform);
+                    hasPlayedMovementEndSound = true;
+                }
                 animator.SetBool(MOVEMENT_PARAM_NAME, false);
+                hasPlayedMovementStartSound = false;
             }
         }
     }

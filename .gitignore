@@ -30,3 +30,5 @@
 .vscode
 ./test*
 *Backup*/
+Assets/_Recovery
+Assets/_Recovery.meta
