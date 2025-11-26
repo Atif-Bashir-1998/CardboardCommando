@@ -199,10 +199,10 @@ public class MoveToMouseClick : MonoBehaviour
         currentHealth -= damageAmount;
         currentHealth = Mathf.Max(0, currentHealth);
         
-        Debug.Log($"Soldier took {damageAmount} damage. Health: {currentHealth}/{maxHealth}");
+        // Debug.Log($"Soldier took {damageAmount} damage. Health: {currentHealth}/{maxHealth}");
         
         healthbar.UpdateHealthBar(maxHealth, currentHealth);
-        
+
         if (currentHealth <= 0)
         {
             Die();
