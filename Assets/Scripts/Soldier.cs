@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class MoveToMouseClick : MonoBehaviour
+public class Soldier : MonoBehaviour
 {
     // Public variables configurable in the Inspector
     public float speed = 4.0f;
@@ -391,5 +391,31 @@ public class MoveToMouseClick : MonoBehaviour
         {
             animator.SetBool(FIRING_PARAM_NAME, false);
         }
+    }
+
+    public void SetTargetPosition(Vector3 newPosition)
+    {
+        if (isDead) return;
+        
+        targetPosition = newPosition;
+        isShooting = false;
+        
+        // Reset sound flags for new movement
+        hasPlayedMovementStartSound = false;
+        hasPlayedMovementEndSound = false;
+        
+        // Play movement start sound
+        if (animator != null)
+        {
+            animator.SetBool(FIRING_PARAM_NAME, false);
+            
+            if (!hasPlayedMovementStartSound)
+            {
+                SoundFXManager.instance.PlayRandomSoundFXClip(movementStartCommandSoundClips, transform);
+                hasPlayedMovementStartSound = true;
+            }
+        }
+        
+        Debug.Log($"Soldier moving to: {newPosition}");
     }
 }
